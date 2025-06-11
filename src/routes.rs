@@ -2,9 +2,7 @@ use axum::{
     Router,
     routing::{get, post},
 };
-
 use crate::handlers::*;
-
 
 pub fn create_router() -> Router {
     Router::new()
