@@ -1,4 +1,6 @@
 pre-commit:
-  jobs:
-    - run: cargo test
-    - run: ./dev.sh
+  commands:
+    unit-tests:
+      run: cargo test
+    endpoint-tests:
+      run: ./dev.sh
