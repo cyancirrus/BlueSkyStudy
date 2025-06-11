@@ -9,9 +9,6 @@ use axum::{
 // use state::*;
 // // mod routes;
 
-
-
-
 #[tokio::main]
 async fn main() {
     let app = Router::new()
