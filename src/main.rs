@@ -1,4 +1,5 @@
 mod state;
+mod types;
 // mod contracts;
 use serde::{
     Serialize,
@@ -13,66 +14,17 @@ use axum::{
     routing::get, 
     routing::post, 
 };
+use types::aliases::{
+    TweetId,
+    UserId,
+    UnixTime,
+};
+
+use types::requests::*;
+use types::responses::*;
+
+
 use state::*;
-// // use tower::ServiceBuilder;
-// use tracing_subscriber;
-// use state::TwitApi;
-// use state::*;
-// // mod routes;
-
-
-// Requests
-#[derive(Debug, Deserialize)]
-pub struct FollowRequest {
-    pub follower: UserId,
-    pub followee: UserId,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct PublishRequest {
-    pub user: UserId,
-    pub msg: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct NewsfeedRequest {
-    pub user: UserId,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct UnfollowRequest {
-    pub follower: UserId,
-    pub followee: UserId,
-    pub reason:String,
-}
-
-// Responses
-#[derive(Debug, Serialize)]
-pub struct WelcomeMessage {
-    pub msg:&'static str,
-}
-
-#[derive(Debug, Serialize)]
-pub struct FollowResponse {
-    msg: String, 
-}
-
-#[derive(Debug, Serialize)]
-pub struct UnfollowResponse {
-    msg: String, 
-}
-
-#[derive(Debug, Serialize)]
-pub struct PublishResponse {
-    pub status:&'static str
-}
-
-#[derive(Debug, Serialize)]
-pub struct NewsfeedResponse {
-    pub status:&'static str,
-    pub feed: Vec<Tweet>,
-}
-
 async fn welcome_handler() -> (StatusCode, Json<WelcomeMessage>) {
     (
         StatusCode::OK,
@@ -122,7 +74,6 @@ async fn newsfeed_handler(Json(payload): Json<NewsfeedRequest>) -> (StatusCode, 
         })
     )
 }
-
 
 #[tokio::main]
 async fn main() {

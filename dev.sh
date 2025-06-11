@@ -14,9 +14,7 @@ application_home() {
 	RESPONSE=$(curl -s \
 		http://0.0.0.0:3000
 	)
-	echo "$RESPONSE"
 	WELCOME=$( echo "$RESPONSE" | jq -r '.msg' )
-	echo "$WELCOME"
 	if [[ "$WELCOME" == "Welcome to AutumnSky!" ]]; then
 		echo "✅ Success"
 	else

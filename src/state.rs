@@ -8,12 +8,13 @@ use serde::{
     Serialize,
     Deserialize,
 };
+use crate::types::aliases::{
+    TweetId,
+    UserId,
+    UnixTime,
+};
 
 const N:usize =  50;
-
-pub type UserId = usize;
-pub type TweetId = usize;
-pub type UnixTime = usize;
 
 #[derive(Default, Clone)]
 struct Recent {
