@@ -1,10 +1,6 @@
 mod state;
 mod types;
 // mod contracts;
-use serde::{
-    Serialize,
-    Deserialize,
-};
 use axum:: {
     extract::Json,
     http::StatusCode,
@@ -13,11 +9,6 @@ use axum::{
     Router,
     routing::get, 
     routing::post, 
-};
-use types::aliases::{
-    TweetId,
-    UserId,
-    UnixTime,
 };
 
 use types::requests::*;
