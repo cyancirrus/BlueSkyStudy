@@ -121,36 +121,3 @@ impl Twitter {
         recents
     }
 }
-
-// NOTE  should exteneralize this into a function
-pub fn testing_interface(actions: Vec<TwitApi>, parms: Vec<Vec<usize>>) {
-    let mut app = Twitter::new();
-    println!("Results:");
-    for i in 0..actions.len() {
-        let result = testing_action(&mut app, actions[i].clone(), parms[i].clone());
-        println!("-----");
-        if let Some(news) = result {
-            println!("NewsFeed: {:?}", news);
-        }
-    }
-}
-
-pub fn testing_action(app: &mut Twitter, action: TwitApi, parms: Vec<usize>) -> Option<Vec<Tweet>> {
-    match action {
-        TwitApi::Post => {
-            app.publish(parms[0], parms[1]);
-            None
-        },
-        TwitApi::Follow => {
-            app.follow(parms[0], parms[1]);
-            None
-        },
-        TwitApi::Unfollow => {
-            app.unfollow(parms[0], parms[1]);
-            None
-        },
-        TwitApi::NewsFeed => {
-            Some(app.news_feed(parms[0]))
-        },
-    }
-}
