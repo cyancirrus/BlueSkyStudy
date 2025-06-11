@@ -1,14 +1,17 @@
+use crate::handlers::*;
+use crate::state::Twitter;
 use axum::{
     Router,
     routing::{get, post},
 };
-use crate::handlers::*;
+use std::sync::Arc;
 
-pub fn create_router() -> Router {
+pub fn create_router(logic:Arc<Twitter>) -> Router {
     Router::new()
         .route("/", get(welcome_handler))
         .route("/follow", post(follow_handler))
         .route("/unfollow", post(unfollow_handler))
         .route("/publish", post(publish_handler))
         .route("/newsfeed", post(newsfeed_handler))
+        .with_state(logic)
 }
