@@ -1,11 +1,11 @@
 use crate::types::requests::*;
 use crate::types::responses::*;
-use crate::state::Tweet;
+use crate::types::aliases::SharedTwitter;
+// use crate::state::Tweet;
 use axum:: {
-    extract::Json,
+    extract::{State, Json},
     http::StatusCode,
 };
-
 
 
 pub async fn welcome_handler() -> (StatusCode, Json<WelcomeMessage>) {
@@ -17,7 +17,12 @@ pub async fn welcome_handler() -> (StatusCode, Json<WelcomeMessage>) {
     )
 }
 
-pub async fn follow_handler(Json(payload): Json<FollowRequest>) -> (StatusCode, Json<FollowResponse>) {
+pub async fn follow_handler(
+    State(logic): State<SharedTwitter>,
+    Json(payload): Json<FollowRequest>,
+) -> (StatusCode, Json<FollowResponse>) {
+    let mut twitter = logic.lock().unwrap();
+    twitter.follow(payload.follower, payload.follower);
     (
         StatusCode::OK,
         Json(FollowResponse{
@@ -26,7 +31,13 @@ pub async fn follow_handler(Json(payload): Json<FollowRequest>) -> (StatusCode, 
     )
 }
 
-pub async fn unfollow_handler(Json(payload): Json<UnfollowRequest>) -> (StatusCode, Json<UnfollowResponse>) {
+pub async fn unfollow_handler(
+    State(logic): State<SharedTwitter>,
+    Json(payload): Json<UnfollowRequest>,
+) -> (StatusCode, Json<UnfollowResponse>) {
+    let mut twitter = logic.lock().unwrap();
+    twitter.unfollow(payload.follower, payload.follower);
+    // drop(twitter);
     (
     StatusCode::OK,
         Json(UnfollowResponse {
@@ -35,7 +46,13 @@ pub async fn unfollow_handler(Json(payload): Json<UnfollowRequest>) -> (StatusCo
     )
 }
 
-pub async fn publish_handler(Json(payload): Json<PublishRequest>) -> (StatusCode, Json<PublishResponse>) {
+pub async fn publish_handler(
+    State(logic): State<SharedTwitter>,
+    Json(payload): Json<PublishRequest>,
+) -> (StatusCode, Json<PublishResponse>) {
+    let mut twitter = logic.lock().unwrap();
+    // note need to do
+    twitter.publish(payload.user, 123);
     (
         StatusCode::OK,
         Json(PublishResponse {
@@ -44,16 +61,21 @@ pub async fn publish_handler(Json(payload): Json<PublishRequest>) -> (StatusCode
     )
 }
 
-pub async fn newsfeed_handler(Json(payload): Json<NewsfeedRequest>) -> (StatusCode, Json<NewsfeedResponse>) {
-    let tweets = vec![
-        Tweet::new(1, 42, 123456),
-        Tweet::new(2, 99, 123457),
-    ];
+pub async fn newsfeed_handler(
+    State(logic): State<SharedTwitter>,
+    Json(payload): Json<NewsfeedRequest>,
+) -> (StatusCode, Json<NewsfeedResponse>) {
+    let mut twitter = logic.lock().unwrap();
+    twitter.news_feed(payload.user);
+    // let tweets = vec![
+    //     Tweet::new(1, 42, 123456),
+    //     Tweet::new(2, 99, 123457),
+    // ];
     (
         StatusCode::OK,
         Json(NewsfeedResponse{
                 status:"ok",
-                feed:tweets,
+                feed: twitter.news_feed(payload.user),
         })
     )
 }
