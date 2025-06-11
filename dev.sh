@@ -11,7 +11,15 @@ start_server() {
 }
 
 application_home() {
-	echo $(curl 0.0.0.0:3000)
+	RESPONSE=$(curl -s http://0.0.0.0:3000)
+	if [[ "$RESPONSE" == "hello world" ]]; then
+		echo "✅ Success"
+	else
+		echo "❌ Unexpected response: $RESPONSE"
+		kill $SERVER_PID
+		exit 1
+	fi
+
 }
 
 start_server
