@@ -19,10 +19,19 @@ use state::*;
 // use state::TwitApi;
 // use state::*;
 // // mod routes;
+
+
+// Requests
 #[derive(Debug, Deserialize)]
 pub struct FollowRequest {
-    pub follower: usize,
-    pub followee: usize,
+    pub follower: UserId,
+    pub followee: UserId,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PublishRequest {
+    pub user: UserId,
+    pub msg: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -32,14 +41,30 @@ pub struct NewsfeedRequest {
 
 #[derive(Debug, Deserialize)]
 pub struct UnfollowRequest {
-    pub follower: usize,
-    pub followee: usize,
+    pub follower: UserId,
+    pub followee: UserId,
     pub reason:String,
+}
+
+// Responses
+#[derive(Debug, Serialize)]
+pub struct WelcomeMessage {
+    pub msg:&'static str,
 }
 
 #[derive(Debug, Serialize)]
 pub struct FollowResponse {
-    message: String, 
+    msg: String, 
+}
+
+#[derive(Debug, Serialize)]
+pub struct UnfollowResponse {
+    msg: String, 
+}
+
+#[derive(Debug, Serialize)]
+pub struct PublishResponse {
+    pub status:&'static str
 }
 
 #[derive(Debug, Serialize)]
@@ -48,11 +73,38 @@ pub struct NewsfeedResponse {
     pub feed: Vec<Tweet>,
 }
 
+async fn welcome_handler() -> (StatusCode, Json<WelcomeMessage>) {
+    (
+        StatusCode::OK,
+        Json(WelcomeMessage{
+            msg: "Welcome to AutumnSky!"
+        }),
+    )
+}
+
 async fn follow_handler(Json(payload): Json<FollowRequest>) -> (StatusCode, Json<FollowResponse>) {
     (
         StatusCode::OK,
         Json(FollowResponse{
-            message:format!("User {} followed {}", payload.follower, payload.followee)
+            msg:format!("User {} followed {}", payload.follower, payload.followee)
+        })
+    )
+}
+
+async fn unfollow_handler(Json(payload): Json<UnfollowRequest>) -> (StatusCode, Json<UnfollowResponse>) {
+    (
+    StatusCode::OK,
+        Json(UnfollowResponse {
+            msg: format!("User {} unfollowed {}", payload.follower, payload.followee),
+        })
+    )
+}
+
+async fn publish_handler(Json(payload): Json<PublishRequest>) -> (StatusCode, Json<PublishResponse>) {
+    (
+        StatusCode::OK,
+        Json(PublishResponse {
+            status: "Success!",
         })
     )
 }
@@ -71,25 +123,16 @@ async fn newsfeed_handler(Json(payload): Json<NewsfeedRequest>) -> (StatusCode, 
     )
 }
 
-async fn unfollow_handler(Json(payload): Json<UnfollowRequest>) -> StatusCode {
-    println!("User {} unfollowed {}", payload.follower, payload.followee);
-    StatusCode::OK
-}
-
-async fn landing_handler(Json(payload): Json<UnfollowRequest>) -> StatusCode {
-    println!("Welcome to AutumnSky!");
-    StatusCode::OK
-}
 
 #[tokio::main]
 async fn main() {
     let mut logic = state::Twitter::new();
     let endpoints = {
         Router::new()
-        .route("/", get(|| async {"hello world"}))
+        .route("/", get(welcome_handler))
         .route("/follow", post(follow_handler))
         .route("/unfollow", post(unfollow_handler))
-        .route("/publish", post(|| async {"publish"}))
+        .route("/publish", post(publish_handler))
         .route("/newsfeed", post(newsfeed_handler))
     };
 
