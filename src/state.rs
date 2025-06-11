@@ -4,12 +4,16 @@ use std::collections::VecDeque;
 use std::collections::BinaryHeap;
 use std::collections::HashSet;
 use std::collections::HashMap;
+use serde::{
+    Serialize,
+    Deserialize,
+};
 
 const N:usize =  50;
 
-type UserId = usize;
-type TweetId = usize;
-type UnixTime = usize;
+pub type UserId = usize;
+pub type TweetId = usize;
+pub type UnixTime = usize;
 
 #[derive(Default, Clone)]
 struct Recent {
@@ -37,7 +41,7 @@ pub struct Twitter {
     time: UnixTime, 
 }
 
-#[derive(Eq, PartialEq, Clone, Debug)]
+#[derive(Eq, PartialEq, Clone, Debug, Deserialize, Serialize)]
 pub struct Tweet {
     user_id:UserId,
     tweet_id:TweetId,
