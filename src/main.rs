@@ -1,14 +1,14 @@
+mod handlers;
+mod routes;
 mod state;
 mod types;
-mod routes;
-mod handlers;
 
-use std::sync::Arc; 
-use state::AppState;
-use routes::create_router;
 use axum::serve;
+use routes::create_router;
+use state::AppState;
+use std::sync::Arc;
 
-const PORT:&'static str = "0.0.0.0:3000";
+const PORT: &'static str = "0.0.0.0:3000";
 
 #[tokio::main]
 async fn main() {
@@ -16,8 +16,6 @@ async fn main() {
     let router = create_router(logic);
     let listener = tokio::net::TcpListener::bind(PORT).await.unwrap();
     {
-        serve(listener, router)
-        .await
-        .unwrap();
+        serve(listener, router).await.unwrap();
     }
 }

@@ -1,6 +1,6 @@
-use std::sync::Arc;
 use bluesky::state::AppState;
 use futures::future::join_all;
+use std::sync::Arc;
 
 #[tokio::test]
 async fn concurrent_inserts() {
@@ -46,4 +46,3 @@ async fn concurrent_inserts() {
 
     futures::future::join_all(feed_tasks).await;
 }
-

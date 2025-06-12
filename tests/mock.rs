@@ -1,4 +1,4 @@
-// use bluesky::state::AppState; 
+// use bluesky::state::AppState;
 // use bluesky::types::requests::*;
 // use bluesky::types::responses::*;
 // use std::fs::File;
@@ -44,7 +44,6 @@
 //                 Arc::new(RwLock::new(mock_state))
 //         )
 // }
-
 
 // #[tokio::test]
 // async fn test_unfollow_presaved_state() {

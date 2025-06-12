@@ -1,5 +1,5 @@
+use crate::types::aliases::UserId;
 use serde::Deserialize;
-use crate::types::aliases:: UserId;
 
 #[derive(Debug, Deserialize)]
 pub struct FollowRequest {
@@ -22,5 +22,5 @@ pub struct NewsfeedRequest {
 pub struct UnfollowRequest {
     pub follower: UserId,
     pub followee: UserId,
-    pub reason:String,
+    pub reason: String,
 }
