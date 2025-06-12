@@ -41,11 +41,8 @@ cargo test
 Design Notes
 
 - Uses DashMap for fast concurrent reads/writes per user
-
 - Rotating buffer (e.g. VecDeque) keeps memory bounded
-
 - No single lock bottleneck; follows/posts/newsfeed all per-user granular
-
 - Easy to extend with storage layers or API interface
 
 Example Feed Output
