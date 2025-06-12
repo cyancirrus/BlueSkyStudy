@@ -4,17 +4,17 @@
 		"2": [3],
 		"3": [1]
 	},
-	"tweets": {
+	"posts": {
 		"1": {
 			"history":[
 				{
 					"user_id":1,
-					"tweet_id":100,
+					"post_id":100,
 					"time":123
 				},
 				{
 					"user_id":1,
-					"tweet_id":101,
+					"post_id":101,
 					"time":124
 				}
 			]
@@ -23,7 +23,7 @@
 			"history":[
 				{
 					"user_id":2,
-					"tweet_id":200,
+					"post_id":200,
 					"time":223
 				}
 			]

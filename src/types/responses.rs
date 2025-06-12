@@ -1,5 +1,5 @@
 use serde::Serialize;
-use crate::state::Tweet;
+use crate::state::Post;
 
 #[derive(Debug, Serialize)]
 pub struct WelcomeMessage {
@@ -24,5 +24,5 @@ pub struct PublishResponse {
 #[derive(Debug, Serialize)]
 pub struct NewsfeedResponse {
     pub status:&'static str,
-    pub feed: Vec<Tweet>,
+    pub feed: Vec<Post>,
 }

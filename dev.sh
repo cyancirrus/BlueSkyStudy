@@ -57,6 +57,6 @@ application_home() {
 start_server
 application_home
 # request_subscribe
-request_newsfeed
+# request_newsfeed
 
 kill $SERVER_PID

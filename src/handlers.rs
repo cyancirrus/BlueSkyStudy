@@ -1,7 +1,7 @@
 use crate::types::requests::*;
 use crate::types::responses::*;
 use crate::types::aliases::SharedAppState;
-// use crate::state::Tweet;
+// use crate::state::Post;
 use axum:: {
     extract::{State, Json},
     http::StatusCode,
@@ -67,9 +67,9 @@ pub async fn newsfeed_handler(
 ) -> (StatusCode, Json<NewsfeedResponse>) {
     let mut twitter = logic.lock().unwrap();
     twitter.news_feed(payload.user);
-    // let tweets = vec![
-    //     Tweet::new(1, 42, 123456),
-    //     Tweet::new(2, 99, 123457),
+    // let posts = vec![
+    //     Post::new(1, 42, 123456),
+    //     Post::new(2, 99, 123457),
     // ];
     (
         StatusCode::OK,
