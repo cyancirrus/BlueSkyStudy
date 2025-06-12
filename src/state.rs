@@ -4,8 +4,8 @@ use std::collections::VecDeque;
 use std::collections::BinaryHeap;
 use std::collections::HashSet;
 use std::collections::HashMap;
-// use std::sync::{Arc, RwLock};
-use std::sync::Arc;
+use dashmap::DashMap;
+use chrono::prelude::{Utc, DateTime};
 use tokio::sync::RwLock;
 use serde::{
     Serialize,
@@ -20,7 +20,7 @@ use crate::types::aliases::{
 const N:usize =  50;
 
 #[derive(Default, Clone, Serialize, Deserialize)]
-struct Recent {
+pub struct Recent {
     history: VecDeque<Post>,
 }
 
@@ -28,11 +28,11 @@ impl Recent {
     fn new() -> Self {
         Recent { history: VecDeque::with_capacity(N) }
     }
-    fn push(&mut self, user_id:UserId, post_id:PostId, time:UnixTime) {
+    fn push(&mut self, user_id:UserId, post_id:PostId, time:DateTime<Utc>) {
         if self.history.len() >= N {
             self.history.pop_back();
         }
-        self.history.push_front(Post::new(user_id, post_id, time));
+        self.history.push_front(Post { user_id, post_id, time });
     }
     fn pop(&mut self) -> Option<Post> {
         self.history.pop_front()
@@ -42,13 +42,13 @@ impl Recent {
 
 #[derive(Eq, PartialEq, Clone, Debug, Deserialize, Serialize)]
 pub struct Post {
-    user_id:UserId,
-    post_id:PostId,
-    time:UnixTime,
+    pub user_id:UserId,
+    pub post_id:PostId,
+    time:DateTime<Utc>,
 }
 
 impl Post {
-    pub fn new(user_id:UserId, post_id:PostId, time:UnixTime) -> Self {
+    pub fn new(user_id:UserId, post_id:PostId, time:DateTime<Utc>) -> Self {
         Self { user_id, post_id, time }
     }
 }
@@ -74,13 +74,11 @@ pub enum BoardApi {
     NewsFeed,
 }
 
-type PrivateUserState = Arc<RwLock<HashSet<UserId>>>;
-
 
 // #[derive(Deserialize)]
 pub struct AppState {
-    follows: HashMap<UserId, PrivateUserState>,
-    posts: HashMap<UserId, Recent>,
+    follows: DashMap<UserId, RwLock<HashSet<UserId>>>,
+    posts: DashMap<UserId, RwLock<Recent>>,
     time: UnixTime, 
 }
 
@@ -88,38 +86,39 @@ pub struct AppState {
 impl AppState {
     pub fn new() -> Self {
         // UnixTime here just for simple prototyping will be replaced with calls
-        Self { follows: HashMap::new(), posts:HashMap::new(), time:0 }
+        Self { follows: DashMap::new(), posts:DashMap::new(), time:0 }
     }
-    pub fn publish(&mut self, user_id:UserId, post_id:PostId) {
-        self.posts.entry(user_id).or_default().push(user_id, post_id, self.time);
-        self.time+=1;
+    pub async fn publish(&self, user_id:UserId, post_id:PostId) {
+        let history = self.posts.entry(user_id).or_default(); 
+        let mut access = history.write().await;
+        access.push(user_id, post_id, Utc::now());
 
     }
-    pub async fn follow(&mut self, follower_id:UserId, followee_id:UserId) {
-        let followees = self.follows.entry(follower_id)
-            .or_default().clone();
+    pub async fn follow(&self, follower_id:UserId, followee_id:UserId) {
+        let followees = self.follows.entry(follower_id) .or_default();
         let mut access  = followees.write().await;
         access.insert(followee_id);
     }
-    pub async fn unfollow(&mut self, follower_id:UserId, followee_id:UserId) {
-        let followees = self.follows.entry(follower_id).or_default().clone();
+    pub async fn unfollow(&self, follower_id:UserId, followee_id:UserId) {
+        let followees = self.follows.entry(follower_id).or_default();
         let mut access = followees.write().await;
         access.remove(&followee_id);
     }
-    pub async fn news_feed(&mut self, user_id:UserId) -> Vec<Post> {
+    pub async fn news_feed(&self, user_id:UserId) -> Vec<Post> {
         let mut news: HashMap<UserId, Recent> = HashMap::new();
         if let Some(subscribes) = self.follows.get(&user_id) {
-            let access = subscribes.read().await;
-            for ldr in access.iter() {
+            let rd_sub_access = subscribes.read().await;
+            for ldr in rd_sub_access.iter() {
                 if let Some(twts) = self.posts.get(ldr) {
-                    news.insert(*ldr, twts.clone());
+                    let rd_twts_access = twts.read().await;
+                    news.insert(*ldr, rd_twts_access.clone());
                 }
             }
         }
         self._nf_merge_k_(10, &mut news).await
     }
 
-    pub async fn _nf_merge_k_(&mut self, k:usize, subscribes:&mut HashMap<UserId, Recent>) -> Vec<Post> {
+    pub async fn _nf_merge_k_(&self, k:usize, subscribes:&mut HashMap<UserId, Recent>) -> Vec<Post> {
         let mut sorted:BinaryHeap<Post>= BinaryHeap::new();
         let mut recents:Vec<Post> = Vec::with_capacity(k);
 

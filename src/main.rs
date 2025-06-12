@@ -3,7 +3,7 @@ mod types;
 mod routes;
 mod handlers;
 
-use std::sync::{Arc, Mutex}; 
+use std::sync::Arc; 
 use state::AppState;
 use routes::create_router;
 use axum::serve;
@@ -12,7 +12,7 @@ const PORT:&'static str = "0.0.0.0:3000";
 
 #[tokio::main]
 async fn main() {
-    let logic = Arc::new(Mutex::new(AppState::new()));
+    let logic = Arc::new(AppState::new());
     let router = create_router(logic);
     let listener = tokio::net::TcpListener::bind(PORT).await.unwrap();
     {

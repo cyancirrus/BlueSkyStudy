@@ -1,12 +1,12 @@
 use crate::handlers::*;
 use crate::state::AppState;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use axum::{
     Router,
     routing::{get, post},
 };
 
-pub fn create_router(logic:Arc<Mutex<AppState>>) -> Router {
+pub fn create_router(logic:Arc<AppState>) -> Router {
     Router::new()
         .route("/", get(welcome_handler))
         .route("/follow", post(follow_handler))

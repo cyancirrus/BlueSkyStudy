@@ -1,7 +1,6 @@
 use crate::types::requests::*;
 use crate::types::responses::*;
 use crate::types::aliases::SharedAppState;
-// use crate::state::Post;
 use axum:: {
     extract::{State, Json},
     http::StatusCode,
@@ -21,8 +20,8 @@ pub async fn follow_handler(
     State(logic): State<SharedAppState>,
     Json(payload): Json<FollowRequest>,
 ) -> (StatusCode, Json<FollowResponse>) {
-    let mut twitter = logic.lock().unwrap();
-    twitter.follow(payload.followee, payload.follower);
+    let logic = logic.clone();
+    logic.follow(payload.followee, payload.follower).await;
     (
         StatusCode::OK,
         Json(FollowResponse{
@@ -35,18 +34,8 @@ pub async fn unfollow_handler(
     State(logic): State<SharedAppState>,
     Json(payload): Json<UnfollowRequest>,
 ) -> (StatusCode, Json<UnfollowResponse>) {
-    let mut twitter = match logic.lock() {
-        Ok(guard) => guard,
-        Err(_) => {
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(UnfollowResponse {
-                    msg: "Internal state error".to_string(),
-                }),
-            );
-        }
-    };
-    twitter.unfollow(payload.follower, payload.followee);
+    let logic = logic.clone();
+    logic.unfollow(payload.followee, payload.follower).await;
     (
         StatusCode::OK,
         Json(UnfollowResponse {
@@ -61,9 +50,8 @@ pub async fn publish_handler(
     State(logic): State<SharedAppState>,
     Json(payload): Json<PublishRequest>,
 ) -> (StatusCode, Json<PublishResponse>) {
-    let mut twitter = logic.lock().unwrap();
-    // note need to do
-    twitter.publish(payload.user, 123);
+    let logic = logic.clone();
+    logic.publish(payload.user, 123).await;
     (
         StatusCode::OK,
         Json(PublishResponse {
@@ -76,17 +64,12 @@ pub async fn newsfeed_handler(
     State(logic): State<SharedAppState>,
     Json(payload): Json<NewsfeedRequest>,
 ) -> (StatusCode, Json<NewsfeedResponse>) {
-    let mut twitter = logic.lock().unwrap();
-    twitter.news_feed(payload.user);
-    // let posts = vec![
-    //     Post::new(1, 42, 123456),
-    //     Post::new(2, 99, 123457),
-    // ];
+    let logic = logic.clone();
     (
         StatusCode::OK,
         Json(NewsfeedResponse{
                 status:"ok",
-                feed: twitter.news_feed(payload.user),
+                feed: logic.news_feed(payload.user).await,
         })
     )
 }
