@@ -4,6 +4,9 @@ use std::collections::VecDeque;
 use std::collections::BinaryHeap;
 use std::collections::HashSet;
 use std::collections::HashMap;
+// use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use serde::{
     Serialize,
     Deserialize,
@@ -36,12 +39,6 @@ impl Recent {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct AppState {
-    follows: HashMap<UserId, HashSet<UserId>>,
-    posts: HashMap<UserId, Recent>,
-    time: UnixTime, 
-}
 
 #[derive(Eq, PartialEq, Clone, Debug, Deserialize, Serialize)]
 pub struct Post {
@@ -77,35 +74,52 @@ pub enum BoardApi {
     NewsFeed,
 }
 
+type PrivateUserState = Arc<RwLock<HashSet<UserId>>>;
+
+
+// #[derive(Deserialize)]
+pub struct AppState {
+    follows: HashMap<UserId, PrivateUserState>,
+    posts: HashMap<UserId, Recent>,
+    time: UnixTime, 
+}
+
+
 impl AppState {
     pub fn new() -> Self {
         // UnixTime here just for simple prototyping will be replaced with calls
-        Self { follows:HashMap::new(), posts:HashMap::new(), time:0 }
+        Self { follows: HashMap::new(), posts:HashMap::new(), time:0 }
     }
     pub fn publish(&mut self, user_id:UserId, post_id:PostId) {
         self.posts.entry(user_id).or_default().push(user_id, post_id, self.time);
         self.time+=1;
 
     }
-    pub fn follow(&mut self, follower_id:UserId, followee_id:UserId) {
-        self.follows.entry(follower_id).or_default().insert(followee_id);
+    pub async fn follow(&mut self, follower_id:UserId, followee_id:UserId) {
+        let followees = self.follows.entry(follower_id)
+            .or_default().clone();
+        let mut access  = followees.write().await;
+        access.insert(followee_id);
     }
-    pub fn unfollow(&mut self, follower_id:UserId, followee_id:UserId) {
-        self.follows.entry(follower_id).or_default().remove(&followee_id);
+    pub async fn unfollow(&mut self, follower_id:UserId, followee_id:UserId) {
+        let followees = self.follows.entry(follower_id).or_default().clone();
+        let mut access = followees.write().await;
+        access.remove(&followee_id);
     }
-    pub fn news_feed(&mut self, user_id:UserId) -> Vec<Post> {
+    pub async fn news_feed(&mut self, user_id:UserId) -> Vec<Post> {
         let mut news: HashMap<UserId, Recent> = HashMap::new();
         if let Some(subscribes) = self.follows.get(&user_id) {
-            for ldr in subscribes {
+            let access = subscribes.read().await;
+            for ldr in access.iter() {
                 if let Some(twts) = self.posts.get(ldr) {
                     news.insert(*ldr, twts.clone());
                 }
             }
         }
-        self._nf_merge_k_(10, &mut news)
+        self._nf_merge_k_(10, &mut news).await
     }
 
-    fn _nf_merge_k_(&mut self, k:usize, subscribes:&mut HashMap<UserId, Recent>) -> Vec<Post> {
+    pub async fn _nf_merge_k_(&mut self, k:usize, subscribes:&mut HashMap<UserId, Recent>) -> Vec<Post> {
         let mut sorted:BinaryHeap<Post>= BinaryHeap::new();
         let mut recents:Vec<Post> = Vec::with_capacity(k);
 
