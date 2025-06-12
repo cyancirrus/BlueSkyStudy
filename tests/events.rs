@@ -1,8 +1,8 @@
-use bluesky::state::{Twitter, Tweet};
+use bluesky::state::{AppState, Tweet};
 
 #[test]
 fn events() {
-    let mut app = Twitter::new();
+    let mut app = AppState::new();
     assert_eq!(app.publish(1, 100), ()); // Post by user 1
     assert_eq!(app.publish(2, 100), ()); // Post by user 2
     assert_eq!(app.news_feed(1), vec![]); // NewsFeed for user 1

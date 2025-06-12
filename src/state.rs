@@ -16,7 +16,7 @@ use crate::types::aliases::{
 
 const N:usize =  50;
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Serialize, Deserialize)]
 struct Recent {
     history: VecDeque<Tweet>,
 }
@@ -36,7 +36,8 @@ impl Recent {
     }
 }
 
-pub struct Twitter {
+#[derive(Serialize, Deserialize)]
+pub struct AppState {
     follows: HashMap<UserId, HashSet<UserId>>,
     tweets: HashMap<UserId, Recent>,
     time: UnixTime, 
@@ -75,7 +76,7 @@ pub enum TwitApi {
     NewsFeed,
 }
 
-impl Twitter {
+impl AppState {
     pub fn new() -> Self {
         // UnixTime here just for simple prototyping will be replaced with calls
         Self { follows:HashMap::new(), tweets:HashMap::new(), time:0 }

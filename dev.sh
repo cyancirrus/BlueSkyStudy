@@ -35,22 +35,23 @@ application_home() {
 # 	fi
 # }
 
-request_newsfeed() {
-	RESPONSE=$(curl -s -X POST \
-		-H "Content-Type: application/json" \
-		-d '{"user":1}' \
-		http://0.0.0.0:3000/newsfeed
-	)
-	STATUS=$(echo "$RESPONSE" | jq -r '.status')
-	FEED_LEN=$(echo "$RESPONSE" | jq '.feed | length')
-	if [[ "$STATUS" == "ok" && "$FEED_LEN" -gt 0 ]]; then
-		echo "✅ Success"
-	else
-		echo "❌ Unexpected response: $RESPONSE"
-		kill $SERVER_PID
-		exit 1
-	fi
-}
+# NOTE: This is being replaced with the methods in mock
+# request_newsfeed() {
+# 	RESPONSE=$(curl -s -X POST \
+# 		-H "Content-Type: application/json" \
+# 		-d '{"user":1}' \
+# 		http://0.0.0.0:3000/newsfeed
+# 	)
+# 	STATUS=$(echo "$RESPONSE" | jq -r '.status')
+# 	FEED_LEN=$(echo "$RESPONSE" | jq '.feed | length')
+# 	if [[ "$STATUS" == "ok" && "$FEED_LEN" -gt 0 ]]; then
+# 		echo "✅ Success"
+# 	else
+# 		echo "❌ Unexpected response: $RESPONSE"
+# 		kill $SERVER_PID
+# 		exit 1
+# 	fi
+# }
 
 
 start_server

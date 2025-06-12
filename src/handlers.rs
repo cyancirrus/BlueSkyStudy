@@ -1,6 +1,6 @@
 use crate::types::requests::*;
 use crate::types::responses::*;
-use crate::types::aliases::SharedTwitter;
+use crate::types::aliases::SharedAppState;
 // use crate::state::Tweet;
 use axum:: {
     extract::{State, Json},
@@ -18,11 +18,11 @@ pub async fn welcome_handler() -> (StatusCode, Json<WelcomeMessage>) {
 }
 
 pub async fn follow_handler(
-    State(logic): State<SharedTwitter>,
+    State(logic): State<SharedAppState>,
     Json(payload): Json<FollowRequest>,
 ) -> (StatusCode, Json<FollowResponse>) {
     let mut twitter = logic.lock().unwrap();
-    twitter.follow(payload.follower, payload.follower);
+    twitter.follow(payload.followee, payload.follower);
     (
         StatusCode::OK,
         Json(FollowResponse{
@@ -32,7 +32,7 @@ pub async fn follow_handler(
 }
 
 pub async fn unfollow_handler(
-    State(logic): State<SharedTwitter>,
+    State(logic): State<SharedAppState>,
     Json(payload): Json<UnfollowRequest>,
 ) -> (StatusCode, Json<UnfollowResponse>) {
     let mut twitter = logic.lock().unwrap();
@@ -47,7 +47,7 @@ pub async fn unfollow_handler(
 }
 
 pub async fn publish_handler(
-    State(logic): State<SharedTwitter>,
+    State(logic): State<SharedAppState>,
     Json(payload): Json<PublishRequest>,
 ) -> (StatusCode, Json<PublishResponse>) {
     let mut twitter = logic.lock().unwrap();
@@ -62,7 +62,7 @@ pub async fn publish_handler(
 }
 
 pub async fn newsfeed_handler(
-    State(logic): State<SharedTwitter>,
+    State(logic): State<SharedAppState>,
     Json(payload): Json<NewsfeedRequest>,
 ) -> (StatusCode, Json<NewsfeedResponse>) {
     let mut twitter = logic.lock().unwrap();
