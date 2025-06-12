@@ -35,16 +35,27 @@ pub async fn unfollow_handler(
     State(logic): State<SharedAppState>,
     Json(payload): Json<UnfollowRequest>,
 ) -> (StatusCode, Json<UnfollowResponse>) {
-    let mut twitter = logic.lock().unwrap();
-    twitter.unfollow(payload.follower, payload.follower);
-    // drop(twitter);
+    let mut twitter = match logic.lock() {
+        Ok(guard) => guard,
+        Err(_) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(UnfollowResponse {
+                    msg: "Internal state error".to_string(),
+                }),
+            );
+        }
+    };
+    twitter.unfollow(payload.follower, payload.followee);
     (
-    StatusCode::OK,
+        StatusCode::OK,
         Json(UnfollowResponse {
             msg: format!("User {} unfollowed {}", payload.follower, payload.followee),
-        })
+        }),
     )
 }
+
+
 
 pub async fn publish_handler(
     State(logic): State<SharedAppState>,
