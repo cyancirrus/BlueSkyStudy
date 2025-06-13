@@ -1,6 +1,6 @@
 # A BlueSky-like Async Study
 
-🚀 A minimal async message board / social feed engine written in Rust.  
+A minimal async message board / social feed engine written in Rust.  
 This project explores high-concurrency design using `DashMap`, per-user rotating buffers, and non-blocking async logic.  
 
 ---
