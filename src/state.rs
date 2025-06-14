@@ -80,7 +80,6 @@ pub enum BoardApi {
 pub struct AppState {
     follows: DashMap<UserId, RwLock<HashSet<UserId>>>,
     posts: DashMap<UserId, RwLock<Recent>>,
-    time: UnixTime,
 }
 
 impl AppState {
@@ -89,7 +88,6 @@ impl AppState {
         Self {
             follows: DashMap::new(),
             posts: DashMap::new(),
-            time: 0,
         }
     }
     pub async fn publish(&self, user_id: UserId, post_id: PostId) {
